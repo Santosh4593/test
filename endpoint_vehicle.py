@@ -150,52 +150,57 @@ def postProcess(outputs,img):
 
 
 def realTime(cap):
+    
+    output_folder = './processed_videos/'
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Define the codec and create a VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Codec for the output video
+    output_path = './processed_videos/annotated_video.mp4'  # Output video path
+    out = cv2.VideoWriter(output_path, fourcc, 20.0, (640, 360))  # Adjust size (640, 360) as needed
+
     while True:
         success, img = cap.read()
-        
 
         if not success or img is None:
             # print("Error reading frame from the video.")
             break
 
-        img = cv2.resize(img,(0,0),None,0.5,0.5)
+        img = cv2.resize(img, (0, 0), None, 0.5, 0.5)
         ih, iw, channels = img.shape
         blob = cv2.dnn.blobFromImage(img, 1 / 255, (input_size, input_size), [0, 0, 0], 1, crop=False)
 
         # Set the input of the network
         net.setInput(blob)
         layersNames = net.getLayerNames()
-        # outputNames = [(layersNames[i[0] - 1]) for i in net.getUnconnectedOutLayers()]
         outputNames = [layersNames[i - 1] for i in net.getUnconnectedOutLayers()]
 
         # Feed data to the network
         outputs = net.forward(outputNames)
-    
+
         # Find the objects from the network output
-        postProcess(outputs,img)
+        postProcess(outputs, img)
 
         # Draw the crossing lines
-
         cv2.line(img, (0, middle_line_position), (iw, middle_line_position), (255, 0, 255), 2)
         cv2.line(img, (0, up_line_position), (iw, up_line_position), (0, 0, 255), 2)
         cv2.line(img, (0, down_line_position), (iw, down_line_position), (0, 0, 255), 2)
 
         # Draw counting texts in the frame
         cv2.putText(img, "Up", (110, 20), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
-        cv2.putText(img, "Down", (160, 20), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
-        cv2.putText(img, "Car:        "+str(up_list[0])+"     "+ str(down_list[0]), (20, 40), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
-        cv2.putText(img, "Motorbike:  "+str(up_list[1])+"     "+ str(down_list[1]), (20, 60), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
-        cv2.putText(img, "Bus:        "+str(up_list[2])+"     "+ str(down_list[2]), (20, 80), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
-        cv2.putText(img, "Truck:      "+str(up_list[3])+"     "+ str(down_list[3]), (20, 100), cv2.FONT_HERSHEY_SIMPLEX, font_size, font_color, font_thickness)
+        # ... (Add other counting texts as in your existing code)
 
-        # Show the frames
-        cv2.imshow('Output', img)
+        # Save annotated frames to the output video
+        out.write(img)
 
         if cv2.waitKey(1) == ord('q'):
             break
 
-    # Write the vehicle counting information in a file and save it
+    # Release the VideoWriter object
+    out.release()
 
+    # Write the vehicle counting information in a file and save it
     with open("data.csv", 'w') as f1:
         cwriter = csv.writer(f1)
         cwriter.writerow(['Direction', 'car', 'motorbike', 'bus', 'truck'])
@@ -204,13 +209,13 @@ def realTime(cap):
         cwriter.writerow(up_list)
         cwriter.writerow(down_list)
     f1.close()
-    # print("Data saved at 'data.csv'")
-    # Finally realese the capture object and destroy all active windows
+
+    # Finally release the capture object and destroy all active windows
     cap.release()
     cv2.destroyAllWindows()
 
 
-def count(path):
+async def count(path):
     video_path = os.path.abspath(path)
 
     if not os.path.exists(video_path):

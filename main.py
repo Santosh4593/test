@@ -1,9 +1,14 @@
 from fastapi import FastAPI, File, UploadFile
 import os
 import aiofiles
+from fastapi.responses import StreamingResponse, FileResponse
+from endpoint_vehicle import count
+from conversion import csv_to_json
 
 
 app = FastAPI()
+
+
 
 @app.post("/upload-video/")
 async def upload_video(video: UploadFile = File(...)):
@@ -22,13 +27,22 @@ async def upload_video(video: UploadFile = File(...)):
         async with aiofiles.open(video_path, "wb") as video_file:
             content = await video.read()
             await video_file.write(content)
+            await count(video_path)
+        csv_content = open("data.csv").read()
+        json_data = csv_to_json(csv_content)
 
-        return {"message": "Video saved successfully"}
+        return { "Data ": json_data}
+
+     
 
     except Exception as e:
         # Handle exceptions (e.g., file-related errors)
         return {"error": f"An error occurred: {str(e)}"}
 
+@app.get("/show")
+async def video():
+    some_file_path = "processed_videos/annotated_video.mp4"
+    return FileResponse(some_file_path)
 
 @app.get("/")
 def root():

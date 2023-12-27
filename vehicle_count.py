@@ -15,7 +15,7 @@ tracker = EuclideanDistTracker()
 # Initialize the videocapture object
 
 
-video_path = os.path.abspath('upload-video/jaduu2.mp4')
+video_path = os.path.abspath('jaduuu3.mp4')
 
 # video_path = os.path.abspath(video_file)
 
@@ -273,4 +273,4 @@ def from_static_image(image):
 
 if __name__ == '__main__':
     realTime()
-    # from_static_image(image_file)
+    
