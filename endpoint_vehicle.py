@@ -91,7 +91,7 @@ def count_vehicle(box_id, img):
     elif iy < up_line_position:
         if id in temp_down_list:
             temp_down_list.remove(id)
-            up_list[index] = up_list[index]+1
+            up_list[index] = up_list[index] + 1
 
     elif iy > down_line_position:
         if id in temp_up_list:
@@ -161,6 +161,7 @@ def realTime(cap):
     out = cv2.VideoWriter(output_path, fourcc, 20.0, (640, 360))  # Adjust size (640, 360) as needed
 
     while True:
+        
         success, img = cap.read()
 
         if not success or img is None:
@@ -199,13 +200,14 @@ def realTime(cap):
 
     # Release the VideoWriter object
     out.release()
-
+    
     # Write the vehicle counting information in a file and save it
     with open("data.csv", 'w') as f1:
         cwriter = csv.writer(f1)
         cwriter.writerow(['Direction', 'car', 'motorbike', 'bus', 'truck'])
         up_list.insert(0, "Up")
         down_list.insert(0, "Down")
+        
         cwriter.writerow(up_list)
         cwriter.writerow(down_list)
     f1.close()
@@ -227,8 +229,8 @@ async def count(path):
     realTime(cap)
 
 
-if __name__ == '__main__':
-    count("jaduuu3.mp4")
+# if __name__ == '__main__':
+#     count("jaduuu3.mp4")
     
 
     
